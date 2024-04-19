@@ -50,7 +50,7 @@ get_opts() {
       shift
       ;;
     -ni | --non-interactive)
-      CI=true
+      NON_INTERACTIVE=true
       shift
       ;;
     -h | --help)
@@ -139,7 +139,7 @@ if [ "$LOCAL" = "yes" ]; then
   exit 0
 fi
 
-if [ "$CI" = "true" ]; then
+if [ "$NON_INTERACTIVE" = "true" ]; then
   log_info "Pushing $BRANCH_NAME to origin"
   # https://github.com/cli/cli/issues/1718#issuecomment-748292216
   git pull
@@ -150,7 +150,7 @@ ORIGINAL_PR_URL="https://github.com/${REPO_UPSTREAM}/pull/${ORIGINAL_PR_NUMBER:-
 BASE_BRANCH="$SUFFIX"
 PR_BODY=$(\cat .github/pull_request_template.md 2>/dev/null || true)
 if [ -n "$ORIGINAL_PR_NUMBER" ]; then
-  if [ "$CI" = "true" ]; then
+  if [ "$NON_INTERACTIVE" = "true" ]; then
     #  --reviewer flag doesn't work with --web
     REVIEWERS=$(gh api repos/"$REPO_UPSTREAM"/pulls/"$ORIGINAL_PR_NUMBER"/reviews | jq '.[] | select(.state == "APPROVED") | .user.login' | jq -c -r -s '. | unique | join(",")')
     if [ -n "$REVIEWERS" ]; then
@@ -168,4 +168,4 @@ log_info "Creating new PR..."
 gh pr create --base "$BASE_BRANCH" --title "$NEW_COMMIT_MSG" \
   --body "Backport of $ORIGINAL_PR_URL$(echo -e "\n\n")$PR_BODY" \
   --assignee "${GITHUB_ACTOR:-@me}" $REVIEWERS_ARG "${LABELS_ARG[@]}" --milestone "$SUFFIX" \
-  $( [ "$CI" != true ] && echo "--web" )
+  $( [ "$NON_INTERACTIVE" != true ] && echo "--web" )
