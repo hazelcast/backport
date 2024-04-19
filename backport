@@ -12,7 +12,7 @@ function usage() {
   echo "Options:"
   echo "  -l,  --local           Skip pushing the branch and creating the PR"
   echo "  -c,  --continue        Continue backporting after fixing cherry-pick conflict"
-  echo "  -ni, --non-interactive Continue backporting after fixing cherry-pick conflict"
+  echo "  -ni, --non-interactive Headlessly creates the PR automatically, without previewing in web browser"
   echo
   echo "What does it do:"
   echo "   '$(basename "$0") master upstream/5.2.z' - will perform the following actions:"
