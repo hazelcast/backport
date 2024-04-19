@@ -10,7 +10,7 @@ backport <source-ref> <target-branch> [-c | --continue] [-l | --local] [-ni | --
 Options:
   -l, --local            Skip pushing the branch and creating the PR
   -c, --continue         Continue backporting after fixing cherry-pick conflict
-  -ni, --non-interactive Headlessly creates the PR automatically, without previewing in web browser"
+  -ni, --non-interactive Headlessly creates the PR automatically, without previewing in web browser
 
 What does it do:
    'backport master upstream/5.2.z' - will perform the following actions:
