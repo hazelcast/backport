@@ -19,7 +19,7 @@ function test_get_pr_number {
   local commit_msg=$1
   local expected_pr_number=$2
   local actual_pr_number=$(get_pr_number "$commit_msg")
-  local MSG="Expected PR Number extracted from \"$commit_msg\""
+  local MSG="Expected PR Number extracted from \"$commit_msg\" should be equal to \"$expected_pr_number\""
   assert_eq "$expected_pr_number" "$actual_pr_number" "$MSG" && log_success "$MSG" || TESTS_RESULT=$?
 }
 
