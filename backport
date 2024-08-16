@@ -105,7 +105,7 @@ SUFFIX="${TARGET##*/}"
 log_info "Backporting the last commit from $SOURCE onto $TARGET"
 
 COMMIT_MSG=$(git show -s --format='%s' "$SOURCE")
-ORIGINAL_PR_NUMBER=$(echo "$COMMIT_MSG" | grep -oP '#(\d+)' | tail -n1 | cut -c2-)
+ORIGINAL_PR_NUMBER=$(echo "$COMMIT_MSG" | grep --extended-regexp --only-matching '#[0-9]+' | tail -n1 | cut -c2-)
 NEW_COMMIT_MSG="$( echo "${COMMIT_MSG// \(\#$ORIGINAL_PR_NUMBER\)}" | sed -r 's/ \[.+\]//g') [$SUFFIX]"
 UPSTREAM_URL="$(git remote get-url upstream)"
 if [[ $UPSTREAM_URL == http* ]]; then
