@@ -5,5 +5,5 @@ set -e
 function get_pr_number() {
 
   local commit_msg=$1
-  echo "$commit_msg" | grep -Eo '#[0-9]+' | tail -n1 | cut -c2-
+  echo "$commit_msg" | grep -oP '#(\d+)' | tail -n1 | cut -c2-
 }
