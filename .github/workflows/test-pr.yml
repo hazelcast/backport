@@ -5,8 +5,13 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
-
+    strategy:
+      matrix:
+        runs-on:
+          - ubuntu-latest
+          - macos-latest
+    name: Test (${{matrix.runs-on}})
+    runs-on: ${{matrix.runs-on}}
     steps:
       - uses: actions/checkout@v4
       - run: ./backport.functions_tests
