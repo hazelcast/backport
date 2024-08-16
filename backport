@@ -22,6 +22,9 @@ function usage() {
   echo "    - create a PR from the new branch to 5.2.z branch with body and labels from the original PR (if found)"
 }
 
+# shellcheck source=/dev/null
+. backport.functions
+
 check_command() {
   if ! [ -x "$(command -v "$1")" ]; then
     echo "Error: '$1' tool required - $2"
@@ -105,7 +108,7 @@ SUFFIX="${TARGET##*/}"
 log_info "Backporting the last commit from $SOURCE onto $TARGET"
 
 COMMIT_MSG=$(git show -s --format='%s' "$SOURCE")
-ORIGINAL_PR_NUMBER=$(echo "$COMMIT_MSG" | grep -oP '#(\d+)' | tail -n1 | cut -c2-)
+ORIGINAL_PR_NUMBER=$(get_pr_number "$COMMIT_MSG")
 NEW_COMMIT_MSG="$( echo "${COMMIT_MSG// \(\#$ORIGINAL_PR_NUMBER\)}" | sed -r 's/ \[.+\]//g') [$SUFFIX]"
 UPSTREAM_URL="$(git remote get-url upstream)"
 if [[ $UPSTREAM_URL == http* ]]; then
