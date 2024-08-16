@@ -41,5 +41,6 @@ function test_get_pr_number {
 
 log_header "Tests for get_pr_number"
 test_get_pr_number 'Fix private test repository access [DI-236] (#221)' '221'
+test_get_pr_number 'Fix private test repository access [DI-236] (#221) (#222)' '222'
 
 assert_eq 0 "$TESTS_RESULT" "All tests should pass"
