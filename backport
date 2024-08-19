@@ -22,8 +22,10 @@ function usage() {
   echo "    - create a PR from the new branch to 5.2.z branch with body and labels from the original PR (if found)"
 }
 
+SCRIPT_DIR=$(readlink -f "$0")
+SCRIPT_DIR="$(dirname "${SCRIPT_DIR}")"
 # shellcheck source=/dev/null
-. backport.functions
+. "${SCRIPT_DIR}"/backport.functions
 
 check_command() {
   if ! [ -x "$(command -v "$1")" ]; then

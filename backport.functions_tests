@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 
 set -eu
-SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
+SCRIPT_DIR=$(readlink -f "$0")
+SCRIPT_DIR="$(dirname "${SCRIPT_DIR}")"
 
 # Source the latest version of assert.sh unit testing library and include in current shell
 curl --silent https://raw.githubusercontent.com/hazelcast/assert.sh/main/assert.sh --output assert.sh
@@ -11,7 +12,8 @@ curl --silent https://raw.githubusercontent.com/hazelcast/assert.sh/main/assert.
 # . <(echo "${assert_script_content}")
 # But this doesn't work on the MacOS GitHub runner (but does on MacOS locally)
 . assert.sh
-. "$SCRIPT_DIR"/backport.functions
+# shellcheck source=/dev/null
+. "${SCRIPT_DIR}"/backport.functions
 
 TESTS_RESULT=0
 
