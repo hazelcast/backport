@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+
+set -eu
+SCRIPT_DIR=$(readlink -f "$0")
+SCRIPT_DIR="$(dirname "${SCRIPT_DIR}")"
+
+# Source the latest version of assert.sh unit testing library and include in current shell
+curl --silent https://raw.githubusercontent.com/hazelcast/assert.sh/main/assert.sh --output assert.sh
+
+# shellcheck source=/dev/null
+# You _should_ be able to avoid a temporary file with something like
+# . <(echo "${assert_script_content}")
+# But this doesn't work on the MacOS GitHub runner (but does on MacOS locally)
+. assert.sh
+# shellcheck source=/dev/null
+# . "${SCRIPT_DIR}"/backport
+
+TESTS_RESULT=0
+
+function test_get_exit_code {
+  local expected_exit_code=$1
+  local backport_arguments=( "${@:2:99}" )
+  local actual_exit_code
+  ("${SCRIPT_DIR}"/backport "${backport_arguments[@]:-}") && true
+  actual_exit_code=$?
+  local msg="Expected exit code with arguments \"${backport_arguments[*]:-}\" should be equal to \"${expected_exit_code}\""
+  assert_eq "${expected_exit_code}" "${actual_exit_code}" "${msg}" && log_success "${msg}" || TESTS_RESULT=$?
+}
+
+log_header "Tests exit code"
+# https://github.com/hazelcast/backport/issues/10
+# Find location of a temp directory, where script is _unlikely_ to exist
+TMPDIR=$(mktemp)
+TMPDIR="$(dirname "${TMPDIR}")"
+(cd "${TMPDIR}"; test_get_exit_code 2)
+
+assert_eq 0 "${TESTS_RESULT}" "All tests should pass"
