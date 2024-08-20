@@ -17,4 +17,4 @@ jobs:
     runs-on: ${{matrix.runs-on}}
     steps:
       - uses: actions/checkout@v4
-      - run: ./backport.functions_tests
+      - run: ./test_scripts

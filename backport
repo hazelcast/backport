@@ -22,13 +22,15 @@ function usage() {
   echo "    - create a PR from the new branch to 5.2.z branch with body and labels from the original PR (if found)"
 }
 
+SCRIPT_DIR=$(readlink -f "$0")
+SCRIPT_DIR="$(dirname "${SCRIPT_DIR}")"
 # shellcheck source=/dev/null
-. backport.functions
+. "${SCRIPT_DIR}"/backport.functions
 
 check_command() {
   if ! [ -x "$(command -v "$1")" ]; then
     echo "Error: '$1' tool required - $2"
-    exit 2
+    exit 1
   fi
 }
 
@@ -36,7 +38,7 @@ check_command "gh" "https://cli.github.com/"
 
 if [[ $# -lt 2 || $# -gt 5 ]]; then
   usage
-  exit 1
+  exit 2
 fi
 
 get_opts() {
