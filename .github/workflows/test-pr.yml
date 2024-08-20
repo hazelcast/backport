@@ -3,6 +3,9 @@ name: Test PR
 on:
   pull_request:
 
+env:
+  GH_TOKEN: ${{ github.token }}
+
 jobs:
   test:
     strategy:

@@ -25,8 +25,32 @@ function test_get_pr_number {
   assert_eq "$expected_pr_number" "$actual_pr_number" "$MSG" && log_success "$MSG" || TESTS_RESULT=$?
 }
 
+function test_get_pr_reviewers {
+  local repo_upstream=$1
+  local pr_number=$2
+  local expected_reviewers=$3
+  local actual_reviewers=$(get_pr_reviewers "$repo_upstream" "$pr_number")
+  local MSG="Expected reviewers extracted from \"$repo_upstream/pull/$pr_number\" should be equal to \"$expected_reviewers\""
+  assert_eq "$expected_reviewers" "$actual_reviewers" "$MSG" && log_success "$MSG" || TESTS_RESULT=$?
+}
+
+function test_get_pr_labels {
+  local repo_upstream=$1
+  local pr_number=$2
+  local expected_labels=$3
+  local actual_labels=$(get_pr_labels "$repo_upstream" "$pr_number")
+  local MSG="Expected labels extracted from \"$repo_upstream/pull/$pr_number\" should be equal to \"$actual_labels\""
+  assert_eq "$expected_labels" "$actual_labels" "$MSG" && log_success "$MSG" || TESTS_RESULT=$?
+}
+
 log_header "Tests for get_pr_number"
 test_get_pr_number 'Fix private test repository access [DI-236] (#221)' '221'
 test_get_pr_number 'Fix private test repository access [DI-236] (#221) (#222)' '222'
+
+log_header "Tests for get_pr_reviewers"
+test_get_pr_reviewers 'hazelcast/backport' '1' 'ldziedziul'
+
+log_header "Tests for get_pr_labels"
+test_get_pr_labels 'hazelcast/backport' '1' 'enhancement'
 
 assert_eq 0 "$TESTS_RESULT" "All tests should pass"

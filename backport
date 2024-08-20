@@ -35,7 +35,6 @@ check_command() {
 }
 
 check_command "gh" "https://cli.github.com/"
-check_command "jq" "https://jqlang.github.io/jq/download/"
 
 if [[ $# -lt 2 || $# -gt 5 ]]; then
   usage
@@ -157,14 +156,14 @@ PR_BODY=$(\cat .github/pull_request_template.md 2>/dev/null || true)
 if [ -n "$ORIGINAL_PR_NUMBER" ]; then
   if [ "$NON_INTERACTIVE" = "true" ]; then
     #  --reviewer flag doesn't work with --web
-    REVIEWERS=$(gh api repos/"$REPO_UPSTREAM"/pulls/"$ORIGINAL_PR_NUMBER"/reviews | jq '.[] | select(.state == "APPROVED") | .user.login' | jq -c -r -s '. | unique | join(",")')
+    REVIEWERS=$(get_pr_reviewers "${REPO_UPSTREAM}" "${ORIGINAL_PR_NUMBER}")
     if [ -n "$REVIEWERS" ]; then
       REVIEWERS_ARG="--reviewer $REVIEWERS"
     fi
   fi
-  PR_BODY=$(gh api repos/$REPO_UPSTREAM/pulls/$ORIGINAL_PR_NUMBER | jq -r '"\n\n" + .body')
+  PR_BODY=$(gh api repos/$REPO_UPSTREAM/pulls/$ORIGINAL_PR_NUMBER --jq '"\n\n" + .body')
 
-  LABELS=$(gh api repos/$REPO_UPSTREAM/pulls/$ORIGINAL_PR_NUMBER | jq '.labels[].name' | jq -c -r -s '. | join(",")')
+  LABELS=$(get_pr_labels "${REPO_UPSTREAM}" "${ORIGINAL_PR_NUMBER}")
   if [ -n "$LABELS" ]; then
     LABELS_ARG=(--label "$LABELS")
   fi

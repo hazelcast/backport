@@ -3,7 +3,21 @@
 set -e
 
 function get_pr_number() {
-
   local commit_msg=$1
+
   echo "$commit_msg" | grep --extended-regexp --only-matching '#[0-9]+' | tail -n1 | cut -c2-
+}
+
+function get_pr_reviewers() {
+  local repo_upstream=$1
+  local pr_number=$2
+
+  gh api repos/"${repo_upstream}"/pulls/"${pr_number}"/reviews --jq '[.[] | select(.state == "APPROVED") | .user.login] | unique | join(",")'
+}
+
+function get_pr_labels() {
+  local repo_upstream=$1
+  local pr_number=$2
+
+  gh api repos/"${repo_upstream}"/pulls/"${pr_number}" --jq '[.labels[].name] | join(",")'
 }
