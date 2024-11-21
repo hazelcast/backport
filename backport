@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -e
+set -ex
 
 function usage() {
   echo "This tool backports the latest commit pointed by <source-ref> on the top of <target-branch> by crating a new branch."
@@ -184,5 +184,5 @@ gh pr create \
   --assignee "${GITHUB_ACTOR:-@me}" \
   "${REVIEWERS_ARG}" \
   "${LABELS_ARG[@]}" \
-  $( [ "$(check_if_milestone_in_repo ${REPO_UPSTREAM} ${SUFFIX}) == "true" ] && echo "--milestone ${SUFFIX}" ) \
+  $( [ "$(check_if_milestone_in_repo ${REPO_UPSTREAM} ${SUFFIX})" == "true" ] && echo "--milestone ${SUFFIX}" ) \
   $( [ "${NON_INTERACTIVE}" != true ] && echo "--web" )
