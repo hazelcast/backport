@@ -21,3 +21,10 @@ function get_pr_labels() {
 
   gh api repos/"${repo_upstream}"/pulls/"${pr_number}" --jq '[.labels[].name] | join(",")'
 }
+
+# upstream/5.2.z -> 5.2z
+function get_branch_from_ref() {
+  local ref=$1
+
+  echo "${ref#*/}"
+}
