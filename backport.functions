@@ -34,3 +34,10 @@ function check_if_milestone_in_repo() {
     echo false
   fi
 }
+
+# upstream/5.2.z -> 5.2z
+function get_branch_from_ref() {
+  local ref=$1
+
+  echo "${ref#*/}"
+}
