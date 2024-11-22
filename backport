@@ -109,7 +109,7 @@ SOURCE=$1
 TARGET=$2
 
 # SUFFIX can be 5.2.3, 5.1.z, etc
-SUFFIX="${TARGET##*/}"
+SUFFIX="${TARGET#*/}"
 
 log_info "Backporting the last commit from $SOURCE onto $TARGET"
 
