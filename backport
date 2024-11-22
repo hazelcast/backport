@@ -13,6 +13,7 @@ function usage() {
   echo "  -l,  --local           Skip pushing the branch and creating the PR"
   echo "  -c,  --continue        Continue backporting after fixing cherry-pick conflict"
   echo "  -ni, --non-interactive Headlessly creates the PR automatically, without previewing in web browser"
+  echo "  -ol, --omit-labels     Omit copying labels to backport PR"
   echo
   echo "What does it do:"
   echo "   '$(basename "$0") master upstream/5.2.z' - will perform the following actions:"
@@ -55,6 +56,10 @@ get_opts() {
       ;;
     -ni | --non-interactive)
       NON_INTERACTIVE=true
+      shift
+      ;;
+    -ol | --omit-labels)
+      OMIT_LABELS=true
       shift
       ;;
     -h | --help)
@@ -163,11 +168,14 @@ if [ -n "$ORIGINAL_PR_NUMBER" ]; then
   fi
   PR_BODY=$(gh api repos/$REPO_UPSTREAM/pulls/$ORIGINAL_PR_NUMBER --jq '"\n\n" + .body')
 
-  LABELS=$(get_pr_labels "${REPO_UPSTREAM}" "${ORIGINAL_PR_NUMBER}")
-  if [ -n "$LABELS" ]; then
-    LABELS_ARG=(--label "$LABELS")
+  if [[ "${OMIT_LABELS}" != "true" ]]; then
+    LABELS=$(get_pr_labels "${REPO_UPSTREAM}" "${ORIGINAL_PR_NUMBER}")
+    if [[ -n "${LABELS}" ]]; then
+      LABELS_ARG=(--label "${LABELS}")
+    fi
   fi
 fi
+
 log_info "Creating new PR..."
 gh pr create \
   --base "${BASE_BRANCH}" \
