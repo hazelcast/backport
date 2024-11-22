@@ -12,14 +12,27 @@ function get_pr_reviewers() {
   local repo_upstream=$1
   local pr_number=$2
 
-  gh api repos/"${repo_upstream}"/pulls/"${pr_number}"/reviews --jq '[.[] | select(.state == "APPROVED") | .user.login] | unique | join(",")'
+  gh api "repos/${repo_upstream}/pulls/${pr_number}/reviews" --jq '[.[] | select(.state == "APPROVED") | .user.login] | unique | join(",")'
 }
 
 function get_pr_labels() {
   local repo_upstream=$1
   local pr_number=$2
 
-  gh api repos/"${repo_upstream}"/pulls/"${pr_number}" --jq '[.labels[].name] | join(",")'
+  gh api "repos/${repo_upstream}/pulls/${pr_number}" --jq '[.labels[].name] | join(",")'
+}
+
+function check_if_milestone_in_repo() {
+  local repo_upstream=$1
+  local milestone=$2
+
+  response=$(gh api "repos/${repo_upstream}/milestones?state=all" --paginate --jq ".[] | select(.title == \"${milestone}\")")
+
+  if [[ -n "${response}" ]]; then
+    echo true
+  else
+    echo false
+  fi
 }
 
 # upstream/5.2.z -> 5.2z
