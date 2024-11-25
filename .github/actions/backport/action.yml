@@ -1,0 +1,67 @@
+name: Backport
+
+inputs:
+  GITHUB_TOKEN:
+    required: true
+  REPO_LOCATION:
+    required: true
+  TARGET_BRANCH:
+    required: true
+  COMMIT_SHA:
+    required: true
+  BACKPORT_OPTIONS:
+
+env:
+  # Not possible to set this as a default
+  # https://github.com/orgs/community/discussions/46670
+  shell: bash
+  backport_location: backport
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/checkout@v4
+      with:
+        repository: hazelcast/backport
+        path: ${{ env.backport_location }}
+
+    - name: Checkout maintenance branch and cherry-pick
+      shell: ${{ env.shell }}
+      working-directory: ${{ inputs.REPO_LOCATION }}
+      run: |
+        # Git metadata is required but not available out-of-the-box, inherit from the action
+        git config user.name "${GITHUB_ACTOR}"
+        git config user.email "${GITHUB_ACTOR}@users.noreply.github.com"
+
+        # Add "upstream" remote as checkout action doesn't include by default
+        git remote add upstream "${{ github.event.repository.clone_url }}"
+        git fetch --all
+
+        backport_target_branch=upstream/"${{ inputs.TARGET_BRANCH }}"
+        echo "::debug::Running backport script to backport "${{ inputs.COMMIT_SHA }}" into \"${backport_target_branch}\""
+
+        ${GITHUB_WORKSPACE}/${backport_location}/backport \
+          "${{ inputs.COMMIT_SHA }}" \
+          "${backport_target_branch}" \
+          --non-interactive \
+          ${{ inputs.BACKPORT_OPTIONS }}
+      env:
+        GH_TOKEN: ${{ github.token }}
+
+    - name: Report errors
+      if: failure()
+      run: |
+        echo "Error running action"
+        echo "Troubleshooting Information"
+        echo "- Repositories' GitHub action configuration - $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/settings/actions"
+        echo "- Action does not run when triggered from a forked repo's PR?"
+        echo "    Enable \"Run workflows from fork pull requests\""
+        echo "- Backport fails with \"GraphQL: GitHub Actions is not permitted to create or approve pull requests (createPullRequest)\"?"
+        echo "    Either:"
+        echo "        * Enable \"Allow GitHub Actions to create and approve pull requests\""
+        echo "        * Use a different \"GITHUB_TOKEN\" with appropriate permissions"
+        echo "- \"GraphQL: Resource not accessible by integration (addComment)\"?"
+        echo "    Either:"
+        echo "        * Enable \"Send write tokens to workflows from fork pull requests\""
+        echo "        * Use a different \"GITHUB_TOKEN\" with appropriate permissions"
+        gh pr comment "${{ github.event.pull_request.number }}" --repo $GITHUB_SERVER_URL/$GITHUB_REPOSITORY --body "❌ [Failed to backport]($GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID), change must be manually backported."
