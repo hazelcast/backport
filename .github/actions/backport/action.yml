@@ -26,14 +26,7 @@ env:
 runs:
   using: composite
   steps:
-    - uses: actions/checkout@v4
-      with:
-        repository: hazelcast/backport
-        # Hardcoded as composite actions don't support env vars properly
-        # https://github.com/orgs/community/discussions/51280
-        path: backport
-
-    - name: Checkout maintenance branch and cherry-pick
+    - name: Backport
       shell: ${{ env.shell }}
       working-directory: ${{ inputs.REPO_LOCATION }}
       run: |
@@ -48,7 +41,7 @@ runs:
         backport_target_branch=upstream/"${{ inputs.TARGET_BRANCH }}"
         echo "::debug::Running backport script to backport "${{ inputs.REF_TO_BACKPORT }}" into \"${backport_target_branch}\""
 
-        ${GITHUB_WORKSPACE}/backport/backport \
+        ${GITHUB_ACTION_PATH}/../../../backport \
           "${{ inputs.REF_TO_BACKPORT }}" \
           "${backport_target_branch}" \
           --non-interactive \
