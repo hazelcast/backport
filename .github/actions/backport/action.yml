@@ -5,9 +5,6 @@ name: Backport
 inputs:
   GITHUB_TOKEN:
     required: true
-  REPO_LOCATION:
-    description: The location of the checked-out repository to work with
-    required: true
   TARGET_BRANCH:
     description: The branch in the repository to backport changes into
     required: true
@@ -28,7 +25,6 @@ runs:
   steps:
     - name: Backport
       shell: ${{ env.shell }}
-      working-directory: ${{ inputs.REPO_LOCATION }}
       run: |
         # Git metadata is required but not available out-of-the-box, inherit from the action
         git config user.name "${GITHUB_ACTOR}"
