@@ -1,13 +1,18 @@
 name: Backport
 
+# A composite action that allows Backporting via GitHub Actions (e.g. to be driven based on labels etc)
+
 inputs:
   GITHUB_TOKEN:
     required: true
   REPO_LOCATION:
+    description: The location of the checked-out repository to work with
     required: true
   TARGET_BRANCH:
+    description: The branch in the repository to backport changes into
     required: true
   COMMIT_SHA:
+    description: The reference of the commit to be backported
     required: true
   BACKPORT_OPTIONS:
 
