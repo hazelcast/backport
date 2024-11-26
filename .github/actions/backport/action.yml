@@ -26,6 +26,11 @@ runs:
         repository: hazelcast/backport
         path: ${{ env.backport_location }}
 
+    - name: Debug
+      shell: ${{ env.shell }}
+      run: |
+        ls
+
     - name: Checkout maintenance branch and cherry-pick
       shell: ${{ env.shell }}
       working-directory: ${{ inputs.REPO_LOCATION }}
@@ -68,3 +73,5 @@ runs:
         echo "        * Use a different \"GITHUB_TOKEN\" with appropriate permissions"
         echo "::endgroup::"
         gh pr comment "${{ github.event.pull_request.number }}" --repo $GITHUB_SERVER_URL/$GITHUB_REPOSITORY --body "❌ [Failed to backport]($GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID), change must be manually backported."
+      env:
+        GH_TOKEN: ${{ github.token }}
