@@ -23,6 +23,23 @@ env:
 runs:
   using: composite
   steps:
+    - name: Assert branch exists
+      id: assert-branch-exists
+      shell: ${{ env.shell }}
+      run: |
+        if git ls-remote --exit-code --heads origin "${{ inputs.TARGET_BRANCH }}"; then
+          echo "::debug::Branch ${{ inputs.TARGET_BRANCH }} exists"
+        else
+          echo "::error::Branch ${{ inputs.TARGET_BRANCH }} does not exist"
+          gh pr comment "${{ github.event.pull_request.number }}" \
+            --repo ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY} \
+            --body "❌ The backport branch \`${{ inputs.TARGET_BRANCH }}\` doesn't exist."
+          echo "failure-already-reported=true" >> ${GITHUB_OUTPUT}
+          exit 1
+        fi
+      env:
+        GH_TOKEN: ${{ github.token }}
+
     - name: Backport
       shell: ${{ env.shell }}
       run: |
@@ -47,11 +64,11 @@ runs:
 
     - name: Report errors
       shell: ${{ env.shell }}
-      if: failure()
+      if: failure() && steps.assert-branch-exists.outputs.failure-already-reported != 'true'
       run: |
         echo ":error::Error running action"
         echo "::group::Troubleshooting Information:"
-        echo "- Repositories' GitHub action configuration - $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/settings/actions"
+        echo "- Repositories' GitHub action configuration - ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/settings/actions"
         echo "- Action does not run when triggered from a forked repo's PR?"
         echo "    Enable \"Run workflows from fork pull requests\""
         echo "- Backport fails with \"GraphQL: GitHub Actions is not permitted to create or approve pull requests (createPullRequest)\"?"
@@ -63,6 +80,8 @@ runs:
         echo "        * Enable \"Send write tokens to workflows from fork pull requests\""
         echo "        * Use a different \"GITHUB_TOKEN\" with appropriate permissions"
         echo "::endgroup::"
-        gh pr comment "${{ github.event.pull_request.number }}" --repo $GITHUB_SERVER_URL/$GITHUB_REPOSITORY --body "❌ [Failed to backport]($GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID), change must be manually backported."
+        gh pr comment "${{ github.event.pull_request.number }}" \
+          --repo ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY} \
+          --body "❌ [Failed to backport](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}), change must be manually backported."
       env:
         GH_TOKEN: ${{ github.token }}
