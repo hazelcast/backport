@@ -15,12 +15,12 @@ inputs:
     description: The reference of the commit to be backported
     required: true
   BACKPORT_OPTIONS:
+    required: false
 
 env:
   # Not possible to set this as a default
   # https://github.com/orgs/community/discussions/46670
   shell: bash
-  backport_location: backport
 
 runs:
   using: composite
@@ -28,7 +28,9 @@ runs:
     - uses: actions/checkout@v4
       with:
         repository: hazelcast/backport
-        path: ${{ env.backport_location }}
+        # Hardcoded as composite actions don't support env vars properly
+        # https://github.com/orgs/community/discussions/51280
+        path: backport
 
     - name: Checkout maintenance branch and cherry-pick
       shell: ${{ env.shell }}
@@ -45,7 +47,7 @@ runs:
         backport_target_branch=upstream/"${{ inputs.TARGET_BRANCH }}"
         echo "::debug::Running backport script to backport "${{ inputs.COMMIT_SHA }}" into \"${backport_target_branch}\""
 
-        ${GITHUB_WORKSPACE}/${backport_location}/backport \
+        ${GITHUB_WORKSPACE}/backport/backport \
           "${{ inputs.COMMIT_SHA }}" \
           "${backport_target_branch}" \
           --non-interactive \
@@ -54,10 +56,11 @@ runs:
         GH_TOKEN: ${{ github.token }}
 
     - name: Report errors
+      shell: ${{ env.shell }}
       if: failure()
       run: |
-        echo "Error running action"
-        echo "Troubleshooting Information"
+        echo ":error::Error running action"
+        echo "::group::Troubleshooting Information:"
         echo "- Repositories' GitHub action configuration - $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/settings/actions"
         echo "- Action does not run when triggered from a forked repo's PR?"
         echo "    Enable \"Run workflows from fork pull requests\""
@@ -69,4 +72,7 @@ runs:
         echo "    Either:"
         echo "        * Enable \"Send write tokens to workflows from fork pull requests\""
         echo "        * Use a different \"GITHUB_TOKEN\" with appropriate permissions"
+        echo "::endgroup::"
         gh pr comment "${{ github.event.pull_request.number }}" --repo $GITHUB_SERVER_URL/$GITHUB_REPOSITORY --body "❌ [Failed to backport]($GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID), change must be manually backported."
+      env:
+        GH_TOKEN: ${{ github.token }}
