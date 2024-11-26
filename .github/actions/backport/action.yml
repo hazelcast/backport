@@ -11,7 +11,7 @@ inputs:
   TARGET_BRANCH:
     description: The branch in the repository to backport changes into
     required: true
-  COMMIT_SHA:
+  REF_TO_BACKPORT:
     description: The reference of the commit to be backported
     required: true
   BACKPORT_OPTIONS:
@@ -46,10 +46,10 @@ runs:
         git fetch --all
 
         backport_target_branch=upstream/"${{ inputs.TARGET_BRANCH }}"
-        echo "::debug::Running backport script to backport "${{ inputs.COMMIT_SHA }}" into \"${backport_target_branch}\""
+        echo "::debug::Running backport script to backport "${{ inputs.REF_TO_BACKPORT }}" into \"${backport_target_branch}\""
 
         ${GITHUB_WORKSPACE}/backport/backport \
-          "${{ inputs.COMMIT_SHA }}" \
+          "${{ inputs.REF_TO_BACKPORT }}" \
           "${backport_target_branch}" \
           --non-interactive \
           ${{ inputs.BACKPORT_OPTIONS }}
