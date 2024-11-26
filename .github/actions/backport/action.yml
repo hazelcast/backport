@@ -27,11 +27,6 @@ runs:
         # https://github.com/orgs/community/discussions/51280
         path: backport
 
-    - name: Debug
-      shell: ${{ env.shell }}
-      run: |
-        ls
-
     - name: Checkout maintenance branch and cherry-pick
       shell: ${{ env.shell }}
       working-directory: ${{ inputs.REPO_LOCATION }}
