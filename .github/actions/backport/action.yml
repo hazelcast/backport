@@ -16,7 +16,6 @@ env:
   # Not possible to set this as a default
   # https://github.com/orgs/community/discussions/46670
   shell: bash
-  backport_location: backport
 
 runs:
   using: composite
@@ -24,7 +23,8 @@ runs:
     - uses: actions/checkout@v4
       with:
         repository: hazelcast/backport
-        # path: ${{ env.backport_location }}
+        # Hardcoded as composite actions don't support env vars properly
+        # https://github.com/orgs/community/discussions/51280
         path: backport
 
     - name: Debug
@@ -47,7 +47,7 @@ runs:
         backport_target_branch=upstream/"${{ inputs.TARGET_BRANCH }}"
         echo "::debug::Running backport script to backport "${{ inputs.COMMIT_SHA }}" into \"${backport_target_branch}\""
 
-        ${GITHUB_WORKSPACE}/${backport_location}/backport \
+        ${GITHUB_WORKSPACE}/backport/backport \
           "${{ inputs.COMMIT_SHA }}" \
           "${backport_target_branch}" \
           --non-interactive \
