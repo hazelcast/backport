@@ -109,7 +109,7 @@ SOURCE=$1
 TARGET=$2
 
 # SUFFIX can be 5.2.3, 5.1.z, etc
-SUFFIX="${TARGET##*/}"
+SUFFIX=$(get_branch_from_ref "${TARGET}")
 
 log_info "Backporting the last commit from $SOURCE onto $TARGET"
 
@@ -177,7 +177,12 @@ if [ -n "$ORIGINAL_PR_NUMBER" ]; then
 fi
 
 log_info "Creating new PR..."
-gh pr create --base "$BASE_BRANCH" --title "$NEW_COMMIT_MSG" \
-  --body "Backport of $ORIGINAL_PR_URL$(echo -e "\n\n")$PR_BODY" \
-  --assignee "${GITHUB_ACTOR:-@me}" $REVIEWERS_ARG "${LABELS_ARG[@]}" --milestone "$SUFFIX" \
-  $( [ "$NON_INTERACTIVE" != true ] && echo "--web" )
+gh pr create \
+  --base "${BASE_BRANCH}" \
+  --title "${NEW_COMMIT_MSG}" \
+  --body "Backport of ${ORIGINAL_PR_URL}$(echo -e "\n\n")${PR_BODY}" \
+  --assignee "${GITHUB_ACTOR:-@me}" \
+  ${REVIEWERS_ARG} \
+  "${LABELS_ARG[@]}" \
+  $( [ "$(check_if_milestone_in_repo ${REPO_UPSTREAM} ${SUFFIX})" == "true" ] && echo "--milestone ${SUFFIX}" ) \
+  $( [ "${NON_INTERACTIVE}" != true ] && echo "--web" )

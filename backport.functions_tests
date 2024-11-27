@@ -43,6 +43,23 @@ function test_get_pr_labels {
   assert_eq "$expected_labels" "$actual_labels" "$MSG" && log_success "$MSG" || TESTS_RESULT=$?
 }
 
+function test_check_if_milestone_in_repo {
+  local repo_upstream=$1
+  local milestone=$2
+  local expected_output=$3
+  local actual_output=$(check_if_milestone_in_repo "$repo_upstream" "$milestone")
+  local MSG="Queried \"$repo_upstream\" for milestone \"$milestone\", expecting \"$expected_output\""
+  assert_eq "$expected_output" "$actual_output" "$MSG" && log_success "$MSG" || TESTS_RESULT=$?
+}
+
+function test_get_branch_from_ref {
+  local ref=$1
+  local expected_branch=$2
+  local actual_branch=$(get_branch_from_ref "$ref")
+  local MSG="Expected branch extracted from \"$ref\" should be equal to \"$actual_branch\""
+  assert_eq "$expected_branch" "$actual_branch" "$MSG" && log_success "$MSG" || TESTS_RESULT=$?
+}
+
 log_header "Tests for get_pr_number"
 test_get_pr_number 'Fix private test repository access [DI-236] (#221)' '221'
 test_get_pr_number 'Fix private test repository access [DI-236] (#221) (#222)' '222'
@@ -52,5 +69,14 @@ test_get_pr_reviewers 'hazelcast/backport' '1' 'ldziedziul'
 
 log_header "Tests for get_pr_labels"
 test_get_pr_labels 'hazelcast/backport' '1' 'enhancement'
+
+log_header "Tests for check_if_milestone_in_repo"
+# https://github.com/hazelcast/hazelcast/milestones
+test_check_if_milestone_in_repo 'hazelcast/hazelcast' '2.1' 'true'
+test_check_if_milestone_in_repo 'hazelcast/hazelcast' 'this-milestone-does-not-exist' 'false'
+
+log_header "Tests for get_branch_from_ref"
+test_get_branch_from_ref 'upstream/5.2.z' '5.2.z'
+test_get_branch_from_ref 'upstream/v/5.2' 'v/5.2'
 
 assert_eq 0 "$TESTS_RESULT" "All tests should pass"
