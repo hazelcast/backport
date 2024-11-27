@@ -11,9 +11,6 @@ inputs:
   REF_TO_BACKPORT:
     description: The reference of the commit to be backported
     required: true
-  BACKPORT_OPTIONS:
-    description: Additional options to pass through to the tool
-    required: false
 
 env:
   # Not possible to set this as a default
@@ -57,8 +54,7 @@ runs:
         ${GITHUB_ACTION_PATH}/../../../backport \
           "${{ inputs.REF_TO_BACKPORT }}" \
           "${backport_target_branch}" \
-          --non-interactive \
-          ${{ inputs.BACKPORT_OPTIONS }}
+          --non-interactive
       env:
         GH_TOKEN: ${{ github.token }}
 
