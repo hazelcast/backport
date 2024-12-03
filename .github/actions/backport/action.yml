@@ -38,7 +38,7 @@ runs:
           exit 1
         fi
       env:
-        GH_TOKEN: ${{ github.token }}
+        GH_TOKEN: ${{ inputs.GITHUB_TOKEN }}
 
     - name: Backport
       shell: ${{ env.shell }}
@@ -60,7 +60,7 @@ runs:
           --non-interactive \
           ${{ inputs.BACKPORT_OPTIONS }}
       env:
-        GH_TOKEN: ${{ github.token }}
+        GH_TOKEN: ${{ inputs.GITHUB_TOKEN }}
 
     - name: Report errors
       shell: ${{ env.shell }}
@@ -84,4 +84,4 @@ runs:
           --repo ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY} \
           --body "❌ [Failed to backport](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}), change must be manually backported."
       env:
-        GH_TOKEN: ${{ github.token }}
+        GH_TOKEN: ${{ inputs.GITHUB_TOKEN }}
