@@ -73,14 +73,16 @@ runs:
           --json number,createdAt \
           --limit 1 \
           --jq 'sort_by(.createdAt) | reverse | .[0].number')
-        echo "PR_NUMBER=$PR_NUMBER" >> $GITHUB_ENV
+        echo "PR_NUMBER=${PR_NUMBER}" >> $GITHUB_ENV
       env:
         GH_TOKEN: ${{ inputs.GITHUB_TOKEN }}
 
     - name: Enable PR automerge
       shell: ${{ env.shell }}
       run: |
-        gh pr merge ${PR_NUMBER} --auto
+        gh pr merge ${PR_NUMBER} \
+          --squash \
+          --auto
       env:
         GH_TOKEN: ${{ inputs.GITHUB_TOKEN }}
 
