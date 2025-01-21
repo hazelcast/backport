@@ -62,6 +62,31 @@ runs:
       env:
         GH_TOKEN: ${{ inputs.GITHUB_TOKEN }}
 
+    - name: Get new PR number
+      shell: ${{ env.shell }}
+      run: |
+        # GitHub has no out-of-the-box way to get the PR number when the PR is raised - instead, use the most recently-raised PR
+        # https://stackoverflow.com/a/76124312
+        PR_NUMBER=$(gh pr list \
+          --state open \
+          --base ${{ inputs.TARGET_BRANCH }} \
+          --json number,createdAt \
+          --limit 1 \
+          --jq 'sort_by(.createdAt) | reverse | .[0].number')
+        echo "PR_NUMBER=$PR_NUMBER" >> $GITHUB_ENV
+
+    - name: Enable PR automerge
+      shell: ${{ env.shell }}
+      run: |
+        gh pr merge ${PR_NUMBER} --auto
+
+    - name: Report success
+      shell: ${{ env.shell }}
+      run: |
+        gh pr comment "${{ github.event.pull_request.number }}" \
+          --repo $GITHUB_SERVER_URL/$GITHUB_REPOSITORY \
+          --body "👍 Created ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER} to backport into [\`${{ inputs.TARGET_BRANCH }}\`](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/tree/${{ inputs.TARGET_BRANCH }})."
+
     - name: Report errors
       shell: ${{ env.shell }}
       if: failure() && steps.assert-branch-exists.outputs.failure-already-reported != 'true'
