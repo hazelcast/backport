@@ -76,7 +76,7 @@ runs:
       run: |
         gh pr comment "${{ github.event.pull_request.number }}" \
           --repo ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY} \
-          --body "👍 Created $(gh pr view --json url  --jq .url) to backport into [\`${{ inputs.TARGET_BRANCH }}\`](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/tree/${{ inputs.TARGET_BRANCH }})."
+          --body "👍 Created $(gh pr view --json url --jq .url) to backport into [\`${{ inputs.TARGET_BRANCH }}\`](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/tree/${{ inputs.TARGET_BRANCH }})."
       env:
         GH_TOKEN: ${{ inputs.GITHUB_TOKEN }}
 
