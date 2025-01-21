@@ -74,11 +74,15 @@ runs:
           --limit 1 \
           --jq 'sort_by(.createdAt) | reverse | .[0].number')
         echo "PR_NUMBER=$PR_NUMBER" >> $GITHUB_ENV
+      env:
+        GH_TOKEN: ${{ inputs.GITHUB_TOKEN }}
 
     - name: Enable PR automerge
       shell: ${{ env.shell }}
       run: |
         gh pr merge ${PR_NUMBER} --auto
+      env:
+        GH_TOKEN: ${{ inputs.GITHUB_TOKEN }}
 
     - name: Report success
       shell: ${{ env.shell }}
@@ -86,6 +90,8 @@ runs:
         gh pr comment "${{ github.event.pull_request.number }}" \
           --repo $GITHUB_SERVER_URL/$GITHUB_REPOSITORY \
           --body "👍 Created ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER} to backport into [\`${{ inputs.TARGET_BRANCH }}\`](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/tree/${{ inputs.TARGET_BRANCH }})."
+      env:
+        GH_TOKEN: ${{ inputs.GITHUB_TOKEN }}
 
     - name: Report errors
       shell: ${{ env.shell }}
