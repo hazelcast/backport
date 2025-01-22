@@ -19,4 +19,4 @@ jobs:
       - uses: actions/checkout@v4
       - run: ./test_scripts
       - if: ${{ false }}
-        uses: ./.github/actions/backport
+        uses: hazelcast/backport/.github/actions/backport@master
