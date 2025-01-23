@@ -7,7 +7,7 @@ env:
   GH_TOKEN: ${{ github.token }}
 
 jobs:
-  test:
+  test-scripts:
     strategy:
       matrix:
         runs-on:
@@ -21,3 +21,9 @@ jobs:
       - uses: raven-actions/actionlint@v2
         with:
           files: .github/*.yml, .github/*.yaml
+  actionlint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: raven-actions/actionlint@v2
+        with:
+          files: .github/**/*.yml, .github/**/*.yaml
