@@ -31,7 +31,7 @@ runs:
           echo "::debug::Branch ${{ inputs.TARGET_BRANCH }} exists"
         else
           echo "::error::Branch ${{ inputs.TARGET_BRANCH }} does not exist"
-          gh pr comment "${{ github.event.pull_request.number }}" \
+          gh pr comment "${{ github.event.number }}" \
             --repo ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY} \
             --body "❌ The backport branch \`${{ inputs.TARGET_BRANCH }}\` doesn't exist."
           echo "failure-already-reported=true" >> ${GITHUB_OUTPUT}
@@ -65,7 +65,7 @@ runs:
     - name: Report success
       shell: ${{ env.shell }}
       run: |
-        gh pr comment "${{ github.event.pull_request.number }}" \
+        gh pr comment "${{ github.event.number }}" \
           --repo ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY} \
           --body "👍 Created $(gh pr view --json url --jq .url) to backport into [\`${{ inputs.TARGET_BRANCH }}\`](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/tree/${{ inputs.TARGET_BRANCH }})."
       env:
@@ -89,7 +89,7 @@ runs:
         echo "        * Enable \"Send write tokens to workflows from fork pull requests\""
         echo "        * Use a different \"GITHUB_TOKEN\" with appropriate permissions"
         echo "::endgroup::"
-        gh pr comment "${{ github.event.pull_request.number }}" \
+        gh pr comment "${{ github.event.number }}" \
           --repo ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY} \
           --body "❌ [Failed to backport](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}), change must be manually backported."
       env:
