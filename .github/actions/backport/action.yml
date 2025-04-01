@@ -23,6 +23,19 @@ env:
 runs:
   using: composite
   steps:
+    - name: Get source PR number
+      shell: ${{ env.shell }}
+      run: |
+        if [ -n "${{ github.event.number }}" ]; then
+          # pull request events include the source PR number
+          echo "SOURCE_PR_NUMBER=${{ github.event.number }}" >> ${GITHUB_ENV}
+        else
+          # push events do not so must find the PR associated with the commit
+          echo "SOURCE_PR_NUMBER=$(gh api repos/${{ github.repository }}/commits/${{ github.sha }}/pulls --jq '.[0].number')" >> ${GITHUB_ENV}
+        fi
+      env:
+        GH_TOKEN: ${{ inputs.GITHUB_TOKEN }}
+
     - name: Assert branch exists
       id: assert-branch-exists
       shell: ${{ env.shell }}
@@ -31,7 +44,7 @@ runs:
           echo "::debug::Branch ${{ inputs.TARGET_BRANCH }} exists"
         else
           echo "::error::Branch ${{ inputs.TARGET_BRANCH }} does not exist"
-          gh pr comment "${{ github.event.number }}" \
+          gh pr comment "${SOURCE_PR_NUMBER}" \
             --repo ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY} \
             --body "❌ The backport branch \`${{ inputs.TARGET_BRANCH }}\` doesn't exist."
           echo "failure-already-reported=true" >> ${GITHUB_OUTPUT}
@@ -65,7 +78,7 @@ runs:
     - name: Report success
       shell: ${{ env.shell }}
       run: |
-        gh pr comment "${{ github.event.number }}" \
+        gh pr comment "${SOURCE_PR_NUMBER}" \
           --repo ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY} \
           --body "👍 Created $(gh pr view --json url --jq .url) to backport into [\`${{ inputs.TARGET_BRANCH }}\`](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/tree/${{ inputs.TARGET_BRANCH }})."
       env:
@@ -89,7 +102,7 @@ runs:
         echo "        * Enable \"Send write tokens to workflows from fork pull requests\""
         echo "        * Use a different \"GITHUB_TOKEN\" with appropriate permissions"
         echo "::endgroup::"
-        gh pr comment "${{ github.event.number }}" \
+        gh pr comment "${SOURCE_PR_NUMBER}" \
           --repo ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY} \
           --body "❌ [Failed to backport](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}), change must be manually backported."
       env:
