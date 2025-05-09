@@ -181,8 +181,8 @@ gh pr create \
   --base "${BASE_BRANCH}" \
   --title "${NEW_COMMIT_MSG}" \
   --body "Backport of ${ORIGINAL_PR_URL}$(echo -e "\n\n")${PR_BODY}" \
-  --assignee "${GITHUB_ACTOR:-@me}" \ \
-  --head $(git branch --show-current)
+  --assignee "${GITHUB_ACTOR:-@me}" \
+  --head $(git branch --show-current) \
   ${REVIEWERS_ARG} \
   "${LABELS_ARG[@]}" \
   $( [ "$(check_if_milestone_in_repo ${REPO_UPSTREAM} ${SUFFIX})" == "true" ] && echo "--milestone ${SUFFIX}" ) \
