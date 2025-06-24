@@ -15,16 +15,11 @@ inputs:
     description: Additional options to pass through to the tool
     required: false
 
-env:
-  # Not possible to set this as a default
-  # https://github.com/orgs/community/discussions/46670
-  shell: bash
-
 runs:
   using: composite
   steps:
     - name: Get source PR number
-      shell: ${{ env.shell }}
+      shell: bash
       run: |
         if [ -n "${{ github.event.number }}" ]; then
           # pull request events include the source PR number
@@ -38,7 +33,7 @@ runs:
 
     - name: Assert branch exists
       id: assert-branch-exists
-      shell: ${{ env.shell }}
+      shell: bash
       run: |
         if git ls-remote --exit-code --heads origin "${{ inputs.TARGET_BRANCH }}"; then
           echo "::debug::Branch ${{ inputs.TARGET_BRANCH }} exists"
@@ -54,7 +49,7 @@ runs:
         GH_TOKEN: ${{ inputs.GITHUB_TOKEN }}
 
     - name: Backport
-      shell: ${{ env.shell }}
+      shell: bash
       run: |
         # Git metadata is required but not available out-of-the-box, inherit from the action
         git config user.name "${GITHUB_ACTOR}"
@@ -76,7 +71,7 @@ runs:
         GH_TOKEN: ${{ inputs.GITHUB_TOKEN }}
 
     - name: Report success
-      shell: ${{ env.shell }}
+      shell: bash
       run: |
         gh pr comment "${SOURCE_PR_NUMBER}" \
           --repo ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY} \
@@ -85,7 +80,7 @@ runs:
         GH_TOKEN: ${{ inputs.GITHUB_TOKEN }}
 
     - name: Report errors
-      shell: ${{ env.shell }}
+      shell: bash
       if: failure() && steps.assert-branch-exists.outputs.failure-already-reported != 'true'
       run: |
         echo ":error::Error running action"
