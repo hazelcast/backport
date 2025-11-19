@@ -28,7 +28,7 @@ jobs:
       merge_commit_sha: ${{ steps.pr.outputs.pr_found == 'true' && fromJSON(steps.pr.outputs.pr).merged_at != null && fromJSON(steps.pr.outputs.pr).merge_commit_sha || '' }}
     steps:
       - id: pr
-        # https://github.com/8BitJonny/gh-get-current-pr/commit/4056877062a1f3b624d5d4c2bedefa9cf51435c9
+        # https://github.com/8BitJonny/gh-get-current-pr/releases/tag/4.0.0
         uses: 8BitJonny/gh-get-current-pr@4056877062a1f3b624d5d4c2bedefa9cf51435c9
 
   parse-pr:
