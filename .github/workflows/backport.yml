@@ -97,7 +97,7 @@ jobs:
         branch: ${{ fromJSON(needs.parse-pr.outputs.backport-branches) }}
     steps:
       - name: 'Checkout `${{ github.repository }}`'
-        uses: actions/checkout@v5
+        uses: actions/checkout@v4
         with:
           token: ${{ secrets.GH_TOKEN }}
           # ensure the backport target branch is checked out, too
@@ -123,7 +123,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
       - name: 'Checkout `hazelcast/backport`'
-        uses: actions/checkout@v5
+        uses: actions/checkout@v4
         with:
           # TODO should not be hardcoded
           repository: hazelcast/backport
