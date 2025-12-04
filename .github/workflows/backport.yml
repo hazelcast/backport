@@ -64,8 +64,15 @@ jobs:
             fi
           done
 
-          echo "backport_labels=$(printf '%s\n' "${backport_labels[@]}" | jq --raw-input --slurp --compact-output 'split("\n") | map(select(length > 0))')" >> ${GITHUB_OUTPUT}
-          echo "backport_branches=$(printf '%s\n' "${backport_branches[@]}" | jq --raw-input --slurp --compact-output 'split("\n") | map(select(length > 0))')" >> ${GITHUB_OUTPUT}
+          function array_to_json() {
+            jq --null-input --compact-output '$ARGS.positional' --args "$@"
+          }
+
+          json=$(array_to_json "${backport_labels[@]}")
+          echo "backport_labels=${json})" >> ${GITHUB_OUTPUT}
+
+          json=$(array_to_json "${backport_branches[@]}")
+          echo "backport_branches=${json})" >> ${GITHUB_OUTPUT}
         env:
           BACKPORT_PREFIX: ${{ inputs.BACKPORT_PREFIX }}
 
