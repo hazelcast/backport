@@ -45,7 +45,7 @@ jobs:
         id: parse-labels
         run: |
           set -o errexit -o nounset -o pipefail ${RUNNER_DEBUG:+-x}
-          source /dev/stdin <<< "$(curl --silent https://raw.githubusercontent.com/hazelcast/github-actions-workflow-commands-for-bash/main/logging.functions.sh)"
+          source /dev/stdin <<< "$(curl --silent https://raw.githubusercontent.com/hazelcast/github-actions-common-scripts/main/logging.functions.sh)"
 
           backport_labels=()
           backport_branches=()
@@ -106,7 +106,7 @@ jobs:
         id: assert-branch-exists
         run: |
           set -o errexit -o nounset -o pipefail ${RUNNER_DEBUG:+-x}
-          source /dev/stdin <<< "$(curl --silent https://raw.githubusercontent.com/hazelcast/github-actions-workflow-commands-for-bash/main/logging.functions.sh)"
+          source /dev/stdin <<< "$(curl --silent https://raw.githubusercontent.com/hazelcast/github-actions-common-scripts/main/logging.functions.sh)"
 
           if git ls-remote --exit-code --heads origin "${{ matrix.branch }}"; then
             echodebug "Branch ${{ matrix.branch }} exists"
@@ -131,7 +131,7 @@ jobs:
       - name: Backport
         run: |
           set -o errexit -o nounset -o pipefail ${RUNNER_DEBUG:+-x}
-          source /dev/stdin <<< "$(curl --silent https://raw.githubusercontent.com/hazelcast/github-actions-workflow-commands-for-bash/main/logging.functions.sh)"
+          source /dev/stdin <<< "$(curl --silent https://raw.githubusercontent.com/hazelcast/github-actions-common-scripts/main/logging.functions.sh)"
 
           # Git metadata is required but not available out-of-the-box, inherit from the action
           git config user.name "${GITHUB_ACTOR}"
@@ -166,7 +166,7 @@ jobs:
         if: failure() && steps.assert-branch-exists.outputs.failure-already-reported != 'true'
         run: |
           set -o errexit -o nounset -o pipefail ${RUNNER_DEBUG:+-x}
-          source /dev/stdin <<< "$(curl --silent https://raw.githubusercontent.com/hazelcast/github-actions-workflow-commands-for-bash/main/logging.functions.sh)"
+          source /dev/stdin <<< "$(curl --silent https://raw.githubusercontent.com/hazelcast/github-actions-common-scripts/main/logging.functions.sh)"
 
           echoerr "Error running action"
           echo_group "Troubleshooting Information:"
