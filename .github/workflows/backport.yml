@@ -29,6 +29,9 @@ jobs:
     steps:
       - id: pr
         uses: 8BitJonny/gh-get-current-pr@4056877062a1f3b624d5d4c2bedefa9cf51435c9 # v4.0.0
+        with:
+          # Authetication token to access GitHub APIs. (Can be omitted by default.)
+          github-token: ${{ secrets.GH_TOKEN }}
 
   parse-pr:
     if: needs.get-current-pr.outputs.merge_commit_sha != ''
