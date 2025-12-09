@@ -21,14 +21,30 @@ jobs:
     name: Get current PR
     runs-on: ubuntu-slim
     outputs:
-      number: ${{ steps.pr.outputs.number }}
+      number: ${{ env.number }}
       # Extract as much metadata as possible to avoid querying later
-      labels: ${{ steps.pr.outputs.pr_labels }}
-      # The action returns a SHA even for unmerged PRs, additional filtering required
-      merge_commit_sha: ${{ steps.pr.outputs.pr_found == 'true' && fromJSON(steps.pr.outputs.pr).merged_at != null && fromJSON(steps.pr.outputs.pr).merge_commit_sha || '' }}
+      labels: ${{ env.labels }}
+      merge_commit_sha: ${{ env.merge_commit_sha }}
     steps:
-      - id: pr
-        uses: 8BitJonny/gh-get-current-pr@4056877062a1f3b624d5d4c2bedefa9cf51435c9 # v4.0.0
+      - name: Extract PR metadata from merged 'pull_request' event
+        if: github.event.pull_request.merged && (github.event_name == 'pull_request' || github.event_name == 'pull_request_target')
+        run: |
+          echo "number=${{ github.event.number }}" >> ${GITHUB_ENV}
+          echo "labels=$(jq --compact-output '[.[] | .name]' <<< '${{ toJson(github.event.pull_request.labels) }}')" >> ${GITHUB_ENV}
+          echo "merge_commit_sha=${{ github.event.pull_request.merge_commit_sha }}" >> ${GITHUB_ENV}
+
+      - name: Extract PR metadata from 'push' event
+        if: github.event_name == 'push'
+        run: |
+          response=$(gh api \
+            -H "Accept: application/vnd.github+json" \
+            /repos/${GITHUB_REPOSITORY}/commits/${GITHUB_SHA}/pulls)
+
+          echo "number=$(jq --raw-output '.[0].number' <<< "${response}")" >> ${GITHUB_ENV}
+          echo "labels=$(jq --raw-output --compact-output '.[0].labels | map(.name)' <<< "${response}")" >> ${GITHUB_ENV}
+          echo "merge_commit_sha=${GITHUB_SHA}" >> ${GITHUB_ENV}
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
   parse-pr:
     if: needs.get-current-pr.outputs.merge_commit_sha != ''
@@ -50,9 +66,7 @@ jobs:
           backport_labels=()
           backport_branches=()
 
-          IFS=, read -ra labels <<< "${{ needs.get-current-pr.outputs.labels }}"
-
-          for label in "${labels[@]}"; do
+          while IFS= read -r label; do
             if [[ ${label} == "${BACKPORT_PREFIX}"* ]]; then
               backport_labels+=("${label}")
 
@@ -62,25 +76,26 @@ jobs:
             else
               echodebug "Skipped label \"${label}\" (not a backport)"
             fi
-          done
+          done < <(jq --raw-output '.[]' <<< '${{ needs.get-current-pr.outputs.labels }}')
 
           function array_to_json() {
             jq --null-input --compact-output '$ARGS.positional' --args "$@"
           }
 
           json=$(array_to_json "${backport_labels[@]}")
-          echo "backport_labels=${json})" >> ${GITHUB_OUTPUT}
+          echo "backport_labels=${json}" >> ${GITHUB_OUTPUT}
 
           json=$(array_to_json "${backport_branches[@]}")
-          echo "backport_branches=${json})" >> ${GITHUB_OUTPUT}
+          echo "backport_branches=${json}" >> ${GITHUB_OUTPUT}
         env:
           BACKPORT_PREFIX: ${{ inputs.BACKPORT_PREFIX }}
 
       - name: Remove backport labels (${{ steps.parse-labels.outputs.backport_labels }})
+        if: steps.parse-labels.outputs.backport_labels != '[]'
         run: |
           set -o errexit -o nounset -o pipefail ${RUNNER_DEBUG:+-x}
 
-          mapfile -t labels < <(jq -r '.[]' <<< '${{ steps.parse-labels.outputs.backport_labels }}')
+          mapfile -t labels < <(jq --raw-output '.[]' <<< '${{ steps.parse-labels.outputs.backport_labels }}')
 
           for backport_label in "${labels[@]}"; do
             gh pr edit "${{ needs.get-current-pr.outputs.number }}" \
