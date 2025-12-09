@@ -12,9 +12,6 @@ on:
         description: Additional options to pass through to the tool
         required: false
         type: string
-    secrets:
-      GH_TOKEN:
-        required: true
 
 jobs:
   get-current-pr:
@@ -44,7 +41,7 @@ jobs:
           echo "labels=$(jq --raw-output --compact-output '.[0].labels | map(.name)' <<< "${response}")" >> ${GITHUB_ENV}
           echo "merge_commit_sha=${GITHUB_SHA}" >> ${GITHUB_ENV}
         env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
 
   parse-pr:
     if: needs.get-current-pr.outputs.merge_commit_sha != ''
@@ -103,7 +100,7 @@ jobs:
               --remove-label "${backport_label}"
           done
         env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
 
   backport:
     name: Backport to "${{ matrix.branch }}"
@@ -121,7 +118,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: ${{ matrix.branch }}
-          token: ${{ secrets.GH_TOKEN }}
+          token: ${{ github.token }}
 
       - name: 'Checkout `hazelcast/backport`'
         uses: actions/checkout@v4
@@ -152,7 +149,7 @@ jobs:
             --non-interactive \
             ${{ inputs.BACKPORT_OPTIONS }}
         env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
 
       - name: Report success
         run: |
@@ -162,7 +159,7 @@ jobs:
             --repo ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY} \
             --body "👍 Created $(gh pr view --json url --jq .url) to backport into [\`${{ matrix.branch }}\`](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/tree/${{ matrix.branch }})."
         env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
 
       - name: Report errors
         if: failure()
@@ -188,4 +185,4 @@ jobs:
             --repo ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY} \
             --body "❌ [Failed to backport](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}), change must be manually backported."
         env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
