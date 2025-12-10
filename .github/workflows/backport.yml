@@ -105,7 +105,7 @@ jobs:
       - name: 'Checkout `${{ github.repository }}`'
         uses: actions/checkout@v4
         with:
-          ref: ${{ matrix.branch }}
+          ref: ${{ needs.get-current-pr.outputs.merge_commit_sha }}
           token: ${{ secrets.GH_TOKEN }}
 
       - name: 'Checkout `hazelcast/backport`'
@@ -124,9 +124,9 @@ jobs:
           git config user.name "${GITHUB_ACTOR}"
           git config user.email "${GITHUB_ACTOR}@users.noreply.github.com"
 
-          # Add "upstream" remote as checkout action doesn't include by default
+          # Add explicit "upstream" remote as required by backport script
           git remote add upstream "${{ github.event.repository.clone_url }}"
-          git fetch --all
+          git fetch upstream --unshallow "${{ matrix.branch }}"
 
           backport_target_branch=upstream/"${{ matrix.branch }}"
           echodebug "Running backport script to backport "${{ needs.get-current-pr.outputs.merge_commit_sha }}" into \"${backport_target_branch}\""

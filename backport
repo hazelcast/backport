@@ -146,7 +146,6 @@ fi
 if [ "$NON_INTERACTIVE" = "true" ]; then
   log_info "Pushing $BRANCH_NAME to origin"
   # https://github.com/cli/cli/issues/1718#issuecomment-748292216
-  git pull
   git push -u origin HEAD
 fi
 
