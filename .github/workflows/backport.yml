@@ -42,8 +42,10 @@ jobs:
           # If the action was triggered by a commit being pushed, we must resolve the PR metadata via the GitHub API
 
           # Immediately after a commit, sometimes the API returns no results, so poll for valid values
-          while :
-          do
+          max_iterations=10
+          iteration=0
+
+          while (( iteration < max_iterations )); do
             response=$(gh api \
               -H "Accept: application/vnd.github+json" \
               /repos/${GITHUB_REPOSITORY}/commits/${GITHUB_SHA}/pulls)
@@ -54,6 +56,7 @@ jobs:
               break
             else
               echo "API returned no results, retrying..."
+              ((iteration++))
               sleep 1
             fi
           done
