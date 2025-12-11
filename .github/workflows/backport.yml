@@ -45,7 +45,7 @@ jobs:
           max_iterations=10
           iteration=0
 
-          while (( iteration < max_iterations )); do
+          while [[ ${iteration} -le ${max_iterations} ]]; do
             response=$(gh api \
               -H "Accept: application/vnd.github+json" \
               /repos/${GITHUB_REPOSITORY}/commits/${GITHUB_SHA}/pulls)
@@ -56,7 +56,7 @@ jobs:
               break
             else
               echo "API returned no results, retrying..."
-              ((iteration++))
+              iteration=$((iteration + 1))
               sleep 1
             fi
           done
