@@ -18,7 +18,7 @@ on:
 
 jobs:
   get-current-pr:
-    name: Get current PR
+    name: Resolve source PR from triggering event
     runs-on: ubuntu-slim
     outputs:
       number: ${{ env.number }}
@@ -29,6 +29,7 @@ jobs:
       - name: Extract PR metadata from merged 'pull_request' event
         if: github.event.pull_request.merged && (github.event_name == 'pull_request' || github.event_name == 'pull_request_target')
         run: |
+          # If the action was triggered by labelling a PR, we can simply pull the PR metadata directly from the event
           echo "number=${{ github.event.number }}" >> ${GITHUB_ENV}
           echo "labels=$(jq --compact-output '[.[] | .name]' <<< '${{ toJson(github.event.pull_request.labels) }}')" >> ${GITHUB_ENV}
           echo "merge_commit_sha=${{ github.event.pull_request.merge_commit_sha }}" >> ${GITHUB_ENV}
@@ -37,6 +38,8 @@ jobs:
         if: github.event_name == 'push'
         run: |
           source /dev/stdin <<< "$(curl --silent https://raw.githubusercontent.com/hazelcast/github-actions-common-scripts/main/logging.functions.sh)"
+
+          # If the action was triggered by a commit being pushed, we must resolve the PR metadata via the GitHub API
 
           # Immediately after a commit, sometimes the API returns no results, so poll for valid values
           while :
