@@ -41,3 +41,15 @@ function get_branch_from_ref() {
 
   echo "${ref#*/}"
 }
+
+function get_branch_name() {
+  local source=$1
+  local suffix=$2
+  local original_pr_number=$3
+
+  if [[ -n "${original_pr_number}" ]]; then
+    echo "backport-pr-${original_pr_number}-${suffix}"
+  else
+    echo "backport-${source}-${suffix}"
+  fi
+}

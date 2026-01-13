@@ -148,7 +148,31 @@ jobs:
           repository: hazelcast/backport
           path: backport
 
+      - name: Check if backport not required (i.e. already done)
+        id: check-backport-branch-already-exists
+        run: |
+          set -o errexit -o nounset -o pipefail ${RUNNER_DEBUG:+-x}
+          source /dev/stdin <<< "$(curl --silent https://raw.githubusercontent.com/hazelcast/github-actions-common-scripts/main/logging.functions.sh)"
+
+          source backport/backport.functions
+
+          BRANCH_NAME=$(get_branch_name \
+            "${{ needs.get-current-pr.outputs.merge_commit_sha }}" \
+            "${{ matrix.branch }}" \
+            "${{ needs.get-current-pr.outputs.number }}" \
+          )
+
+          if gh api "repos/${GITHUB_REPOSITORY}/branches/${BRANCH_NAME}"; then
+            echo "exists=true" >> ${GITHUB_OUTPUT}
+            echonotice "Skipping backport to ${{ matrix.branch }} as existing backport branch (${BRANCH_NAME})"
+          else
+            echo "exists=false" >> ${GITHUB_OUTPUT}
+          fi
+        env:
+          GH_TOKEN: ${{ github.token }}
+
       - name: Backport
+        if: steps.check-backport-branch-already-exists.outputs.exists == 'false'
         run: |
           set -o errexit -o nounset -o pipefail ${RUNNER_DEBUG:+-x}
           source /dev/stdin <<< "$(curl --silent https://raw.githubusercontent.com/hazelcast/github-actions-common-scripts/main/logging.functions.sh)"
@@ -173,6 +197,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
 
       - name: Report success
+        if: steps.check-backport-branch-already-exists.outputs.exists == 'false'
         run: |
           set -o errexit -o nounset -o pipefail ${RUNNER_DEBUG:+-x}
 

@@ -126,10 +126,11 @@ if [ "$CONTINUE" = "yes" ]; then
   git cherry-pick --continue
 #echo "ignored"
 else
-  BRANCH_NAME="backport-${SOURCE}-${SUFFIX}"
-  if [ -n "$ORIGINAL_PR_NUMBER" ]; then
-    BRANCH_NAME="backport-pr-${ORIGINAL_PR_NUMBER}-${SUFFIX}"
-  fi
+  BRANCH_NAME=$(get_branch_name  \
+    "${SOURCE}" \
+    "${SUFFIX}" \
+    "${ORIGINAL_PR_NUMBER}" \
+  )
   log_info "Creating new branch $BRANCH_NAME from $TARGET"
   git switch -c "$BRANCH_NAME" "$TARGET"
   log_info "Cherry picking '$COMMIT_MSG'"
