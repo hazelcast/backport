@@ -16,5 +16,5 @@ jobs:
     name: Test (${{matrix.runs-on}})
     runs-on: ${{matrix.runs-on}}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - run: ./test_scripts
