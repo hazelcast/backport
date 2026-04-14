@@ -12,10 +12,10 @@ on:
         description: Additional options to pass through to the tool
         required: false
         type: string
+    secrets:
       PR_CREATE_TOKEN:
         description: Optional token used for PR creation, defaults to github.token - using a "real" token allows for downstream actions to be triggered - https://docs.github.com/en/actions/how-tos/write-workflows/choose-when-workflows-run/trigger-a-workflow#triggering-a-workflow-from-a-workflow
         required: false
-        type: string
 
 jobs:
   get-current-pr:
@@ -198,7 +198,7 @@ jobs:
             --non-interactive \
             ${{ inputs.BACKPORT_OPTIONS }}
         env:
-          GH_TOKEN: ${{ inputs.PR_CREATE_TOKEN || github.token }}
+          GH_TOKEN: ${{ secrets.PR_CREATE_TOKEN || github.token }}
 
       - name: Report success
         if: steps.check-backport-branch-already-exists.outputs.exists == 'false'
