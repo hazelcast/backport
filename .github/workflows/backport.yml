@@ -23,8 +23,6 @@ jobs:
     runs-on: ubuntu-slim
     outputs:
       number: ${{ env.number }}
-      # Extract as much metadata as possible to avoid querying later
-      labels: ${{ env.labels }}
       merge_commit_sha: ${{ env.merge_commit_sha }}
     steps:
       - name: Extract PR metadata from merged 'pull_request' event
@@ -32,7 +30,6 @@ jobs:
         run: |
           # If the action was triggered by labelling a PR, we can simply pull the PR metadata directly from the event
           echo "number=${{ github.event.number }}" >> ${GITHUB_ENV}
-          echo "labels=$(jq --compact-output '[.[] | .name]' <<< '${{ toJson(github.event.pull_request.labels) }}')" >> ${GITHUB_ENV}
           echo "merge_commit_sha=${{ github.event.pull_request.merge_commit_sha }}" >> ${GITHUB_ENV}
 
       - name: Extract PR metadata from 'push' event
@@ -63,7 +60,6 @@ jobs:
           done
 
           echo "number=$(jq --raw-output '.[0].number' <<< "${response}")" >> ${GITHUB_ENV}
-          echo "labels=$(jq --raw-output --compact-output '.[0].labels | map(.name)' <<< "${response}")" >> ${GITHUB_ENV}
           echo "merge_commit_sha=${GITHUB_SHA}" >> ${GITHUB_ENV}
         env:
           GH_TOKEN: ${{ github.token }}
@@ -88,6 +84,8 @@ jobs:
           backport_labels=()
           backport_branches=()
 
+          # Iterate through PR labels
+          # Query via API (inside of `concurrent` block) to ensure we have the latest labels - in case another execution updated any labels while the workflow was being executed
           while IFS= read -r label; do
             if [[ ${label} == "${BACKPORT_PREFIX}"* ]]; then
               backport_labels+=("${label}")
@@ -98,7 +96,10 @@ jobs:
             else
               echodebug "Skipped label \"${label}\" (not a backport)"
             fi
-          done < <(jq --raw-output '.[]' <<< '${{ needs.get-current-pr.outputs.labels }}')
+          done < <(gh api \
+              -H "Accept: application/vnd.github+json" \
+              /repos/${GITHUB_REPOSITORY}/pulls/${{ needs.get-current-pr.outputs.number }} \
+              --jq '.labels.[].name')
 
           function array_to_json() {
             jq --null-input --compact-output '$ARGS.positional' --args "$@"
@@ -110,6 +111,7 @@ jobs:
           json=$(array_to_json "${backport_branches[@]}")
           echo "backport_branches=${json}" >> ${GITHUB_OUTPUT}
         env:
+          GH_TOKEN: ${{ github.token }}
           BACKPORT_PREFIX: ${{ inputs.BACKPORT_PREFIX }}
 
       - name: Remove backport labels (${{ steps.parse-labels.outputs.backport_labels }})
