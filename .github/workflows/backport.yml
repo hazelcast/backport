@@ -146,6 +146,7 @@ jobs:
         with:
           ref: ${{ matrix.branch }}
           token: ${{ github.token }}
+          allow-unsafe-pr-checkout: true
 
       - name: 'Checkout `hazelcast/backport`'
         uses: actions/checkout@v7
@@ -153,6 +154,7 @@ jobs:
           # TODO should not be hardcoded
           repository: hazelcast/backport
           path: backport
+          allow-unsafe-pr-checkout: true
 
       - name: Check if backport not required (i.e. already done)
         id: check-backport-branch-already-exists
