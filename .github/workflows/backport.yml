@@ -142,13 +142,13 @@ jobs:
         branch: ${{ fromJSON(needs.parse-pr.outputs.backport-branches) }}
     steps:
       - name: 'Checkout `${{ github.repository }}`'
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           ref: ${{ matrix.branch }}
           token: ${{ github.token }}
 
       - name: 'Checkout `hazelcast/backport`'
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           # TODO should not be hardcoded
           repository: hazelcast/backport
