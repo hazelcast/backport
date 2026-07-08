@@ -35,7 +35,7 @@ jobs:
       - name: Extract PR metadata from 'push' event
         if: github.event_name == 'push'
         run: |
-          source /dev/stdin <<< "$(curl --fail --silent https://raw.githubusercontent.com/hazelcast/github-actions-common-scripts/main/logging.functions.sh)"
+          source /dev/stdin <<< "$(curl --fail --retry 5 --retry-all-errors --show-error --silent https://raw.githubusercontent.com/hazelcast/github-actions-common-scripts/main/logging.functions.sh)"
 
           # If the action was triggered by a commit being pushed, we must resolve the PR metadata via the GitHub API
 
@@ -79,7 +79,7 @@ jobs:
         id: parse-labels
         run: |
           set -o errexit -o nounset -o pipefail ${RUNNER_DEBUG:+-x}
-          source /dev/stdin <<< "$(curl --fail --silent https://raw.githubusercontent.com/hazelcast/github-actions-common-scripts/main/logging.functions.sh)"
+          source /dev/stdin <<< "$(curl --fail --retry 5 --retry-all-errors --show-error --silent https://raw.githubusercontent.com/hazelcast/github-actions-common-scripts/main/logging.functions.sh)"
 
           backport_labels=()
           backport_branches=()
@@ -160,7 +160,7 @@ jobs:
         id: check-backport-branch-already-exists
         run: |
           set -o errexit -o nounset -o pipefail ${RUNNER_DEBUG:+-x}
-          source /dev/stdin <<< "$(curl --fail --silent https://raw.githubusercontent.com/hazelcast/github-actions-common-scripts/main/logging.functions.sh)"
+          source /dev/stdin <<< "$(curl --fail --retry 5 --retry-all-errors --show-error --silent https://raw.githubusercontent.com/hazelcast/github-actions-common-scripts/main/logging.functions.sh)"
 
           source backport/backport.functions
 
@@ -183,7 +183,7 @@ jobs:
         if: steps.check-backport-branch-already-exists.outputs.exists == 'false'
         run: |
           set -o errexit -o nounset -o pipefail ${RUNNER_DEBUG:+-x}
-          source /dev/stdin <<< "$(curl --fail --silent https://raw.githubusercontent.com/hazelcast/github-actions-common-scripts/main/logging.functions.sh)"
+          source /dev/stdin <<< "$(curl --fail --retry 5 --retry-all-errors --show-error --silent https://raw.githubusercontent.com/hazelcast/github-actions-common-scripts/main/logging.functions.sh)"
 
           # Git metadata is required but not available out-of-the-box, inherit from the action
           git config user.name "${GITHUB_ACTOR}"
@@ -219,7 +219,7 @@ jobs:
         if: failure()
         run: |
           set -o errexit -o nounset -o pipefail ${RUNNER_DEBUG:+-x}
-          source /dev/stdin <<< "$(curl --fail --silent https://raw.githubusercontent.com/hazelcast/github-actions-common-scripts/main/logging.functions.sh)"
+          source /dev/stdin <<< "$(curl --fail --retry 5 --retry-all-errors --show-error --silent https://raw.githubusercontent.com/hazelcast/github-actions-common-scripts/main/logging.functions.sh)"
 
           echoerr "Error running action"
           echo_group "Troubleshooting Information:"
